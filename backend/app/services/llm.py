@@ -1,4 +1,37 @@
 
+async def summarize_policy(text: str) -> dict:
+    """
+    Summarize policy text in chunks, then create a rural-friendly ELI5 explanation.
+    Returns: { 'summary': ..., 'eli5': ... }
+    """
+    # 1. Chunk text
+    chunk_size = 1500
+    chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+    summaries = []
+    for chunk in chunks:
+        prompt = (
+            "Summarize the following insurance policy text in simple, clear language for rural India. "
+            "Avoid jargon.\n\nText:\n" + chunk
+        )
+        try:
+            summary = await generate_chat_response(prompt, context=None, provider="openai")
+        except Exception:
+            summary = "[Summary unavailable]"
+        summaries.append(summary)
+    raw_summary = "\n".join(summaries)
+
+    # 4. ELI5 rural-language version
+    eli5_prompt = (
+        "Explain the following insurance policy summary as if I am 5 years old, "
+        "using rural Indian language and examples. Avoid jargon.\n\nSummary:\n" + raw_summary
+    )
+    try:
+        eli5 = await generate_chat_response(eli5_prompt, context=None, provider="openai")
+    except Exception:
+        eli5 = "[ELI5 explanation unavailable]"
+
+    return {"summary": raw_summary, "eli5": eli5}
+
 import os
 import asyncio
 from typing import Optional, Dict, Any, List
