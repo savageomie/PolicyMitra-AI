@@ -32,3 +32,21 @@ class RecommendResponse(BaseModel):
     trust_score: float
     total_premium: float
     explanation: Optional[str] = None
+
+
+class FormRequest(BaseModel):
+    name: Optional[str] = None
+    aadhaar: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    age: Optional[int] = None
+    # allow additional arbitrary fields
+    extra: Optional[dict] = None
+
+
+class FormAssistResponse(BaseModel):
+    missing_fields: list[str]
+    aadhaar_valid: bool
+    aadhaar_suggestion: Optional[str] = None
+    hints: list[str]
+    cleaned: dict
