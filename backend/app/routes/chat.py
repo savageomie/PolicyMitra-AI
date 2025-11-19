@@ -4,6 +4,7 @@ from fastapi import status
 from ..models.schemas import ChatRequest, ChatResponse
 from ..services.llm import generate_chat_response
 from ..services.tts import synthesize_tts
+import os
 
 router = APIRouter()
 
@@ -22,12 +23,22 @@ async def chat_endpoint(request: ChatRequest):
     response_text = await generate_chat_response(request.message, context=llm_context)
 
     # Synthesize TTS audio
-    tts_audio = await synthesize_tts(response_text, request.language)
+    tts_audio_path = await synthesize_tts(response_text, request.language)
+
+    # convert absolute file path to a URL under /audio if synthesis succeeded
+    if tts_audio_path != "tts_error":
+        audio_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "audio"))
+        try:
+            tts_audio_url = tts_audio_path.replace(audio_dir, "/audio").replace("\\", "/")
+        except Exception:
+            tts_audio_url = tts_audio_path
+    else:
+        tts_audio_url = "tts_error"
 
     return ChatResponse(
         session_id=request.session_id,
         response=response_text,
         language=request.language,
-        tts_audio=tts_audio,
+        tts_audio=tts_audio_url,
         context=request.context
     )
