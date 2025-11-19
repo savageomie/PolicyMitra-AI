@@ -66,4 +66,6 @@ htmlcov/
 # Ignore local Uvicorn/ASGI reload artifacts
 *.pid
 
+tests/
+
 # End
